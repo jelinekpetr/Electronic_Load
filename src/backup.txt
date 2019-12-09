@@ -1,0 +1,64 @@
+
+/* I2C LCD with Arduino example code. More info: https://www.makerguides.com */
+// Include the libraries:
+// LiquidCrystal_I2C.h: https://github.com/johnrickman/LiquidCrystal_I2C
+
+#include <Arduino.h>
+#include <Wire.h> // Library for I2C communication
+#include <LiquidCrystal_I2C.h> // Library for LCD
+
+byte omega[] = {B01110,B10001,B10001,B10001,B01010,B01010,B11011,B00000};
+
+// Wiring: SDA pin is connected to A4 and SCL pin to A5.
+// Connect to LCD via I2C, default address 0x27 (A0-A2 not jumpered)
+
+LiquidCrystal_I2C lcd = LiquidCrystal_I2C(0x27, 20, 4); // Change to (0x27,16,2) for 16x2 LCD.
+
+void initLCD() {
+  // Initiate the LCD:
+  lcd.init();
+  lcd.createChar(0, omega);
+  lcd.backlight();
+}
+
+void drawMainScreen() {
+  lcd.setCursor(0, 0); // Set the cursor on the first column and first row.
+  lcd.print("I:12.865A | U:12.85V"); // Print the string "Hello World!"
+  lcd.setCursor(0, 1); //Set the cursor on the third column and the second row (counting starts at 0!).
+  lcd.print("P:165.3W  | R:  0.9");
+  lcd.write(0);
+}
+
+void updateTime(uint16_t elapsed) {
+
+  uint8_t col3 = 2;
+  uint8_t secs = 0;
+  uint8_t mins = 0;
+
+  lcd.setCursor(col3, 3);
+
+  mins = elapsed/60;
+  if (mins >= 10) col3--;
+  if (mins >= 100) col3--;
+  lcd.setCursor(col3, 2);
+  lcd.print(mins);
+  lcd.setCursor(3, 2);
+  lcd.print(":");
+  secs = elapsed%60;
+  if (secs < 10) lcd.print("0");
+  lcd.print(secs);
+}
+
+void setup() {
+
+  initLCD();
+  drawMainScreen();
+
+}
+
+void loop() {
+
+  delay(1000);
+  updateTime(millis()/1000);
+
+}
