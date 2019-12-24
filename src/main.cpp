@@ -432,6 +432,8 @@ void checkKeyboardBuffer() {
   }
 }
 
+
+
 void checkDeviceStatus() {
 
 }
