@@ -432,23 +432,6 @@ void checkKeyboardBuffer() {
   }
 }
 
-/*
-case 'C':
-if (mainScreen.textFields[0]._inEditMode == false) {
-  //mainScreen.textFields[0].setEditMode(lcd);
-  //mainScreen._refreshEnabled = false;
-  statusRegister[2] = 1;     // Enter setup mode
-}
-break;
-case 'Q':
-if (mainScreen.textFields[0]._inEditMode == true) {
-  //mainScreen.textFields[0].disableEditMode(lcd);
-  //mainScreen._refreshEnabled = true;
-  statusRegister[2] = 0;     // Finish setup mode
-}
-break;
-*/
-
 void checkDeviceStatus() {
 
 }
