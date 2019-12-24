@@ -6,7 +6,6 @@
 #define RESIST_VALUE 4
 #define TIME_VALUE 5
 
-
 #include <LiquidCrystal_I2C.h>
 
 class TextField {
@@ -26,6 +25,7 @@ public:
   uint8_t _valueType;
   int8_t _numValueLength;
   int8_t _blinkValuePosition;
+  int8_t _blink;
   //bool _isValueNew;
   TextField(String, bool, uint8_t, uint8_t, uint8_t, String, String, uint8_t);
   //void setBlinkCursor(uint8_t position);
@@ -41,7 +41,7 @@ public:
   int8_t shiftRightValueBlinkPosition();
 
 private:
-  void printFrac(uint16_t value, uint16_t divider, uint8_t valueLength, uint8_t fracLength, LiquidCrystal_I2C& lcd, uint8_t blink = 1);
+  void printFrac(uint16_t value, uint16_t divider, uint8_t valueLength, uint8_t fracLength, LiquidCrystal_I2C& lcd);
   void setPrefix(String prefix);
   void setSuffix(String suffix);
   void drawPrefix(LiquidCrystal_I2C& lcd);

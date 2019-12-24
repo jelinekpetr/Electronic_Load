@@ -7,6 +7,7 @@ TextField::TextField(String name, bool isUsed, uint8_t x, uint8_t y, uint8_t len
   _inEditMode = false;
   _valuePrintable = false;
   _blinkValuePosition = -1;
+  _blink = 1;
   switch (_valueType) {
     case 1:
     _numValueLength = 5;
@@ -58,7 +59,6 @@ void TextField::draw(LiquidCrystal_I2C& lcd) {
 }
 
 void TextField::setEditMode(LiquidCrystal_I2C& lcd) {
-  _inEditMode = 1;
   uint8_t ind = 0;
   if (_suffix.endsWith(";") == 0) {
     ind = _length - 1;
@@ -67,16 +67,13 @@ void TextField::setEditMode(LiquidCrystal_I2C& lcd) {
   }
   lcd.setCursor(_x+ind, _y);
   lcd.write(1);       // Arrows
-  /*
-  lcd.setCursor(_x + _length - _suffix.length() - 1 - blinkPos, _y);
-  if (blink == 0) {
-    lcd.print(' ');
-  }
-  */
+  _inEditMode = 1;
+  _blinkValuePosition = 0;
 }
 
 void TextField::disableEditMode(LiquidCrystal_I2C& lcd) {
   _inEditMode = 0;
+  _blinkValuePosition = -1;
   drawSuffix(lcd);
 }
 
@@ -87,7 +84,7 @@ void TextField::clearValue(LiquidCrystal_I2C &lcd) {
   }
 }
 
-void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength, uint8_t fracLength, LiquidCrystal_I2C& lcd, uint8_t blink) {
+void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength, uint8_t fracLength, LiquidCrystal_I2C& lcd) {
   uint16_t card = value/divider;
   uint16_t frac = value%divider;
   uint8_t xoff = _prefix.length() + (valueLength - fracLength - 2);
@@ -96,13 +93,11 @@ void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength,
   for (uint8_t i = 0; i < valueLength; i++) {
     lcd.print(" ");
   }
-
   if (card > 9) {xoff--;}
   if (card > 99) {xoff--;}
   if (card > 999) {xoff--;}
   if (card > 9999) {xoff--;}
   if (fracLength == 0) {xoff++;}
-
   lcd.setCursor(_x + xoff, _y);
   lcd.print(card);
   if (fracLength > 0) {
@@ -112,7 +107,7 @@ void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength,
         lcd.print("0");
       }
     }
-    if (fracLength > 2 && frac < 100 && frac > 9) {
+    if ((fracLength > 2) && (frac < 100) && (frac > 9)) {
       for (uint8_t i = 0; i < fracLength-2; i++) {
         lcd.print("0");
       }
@@ -124,7 +119,7 @@ void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength,
     if (_blinkValuePosition >= fracLength) {
       lcd.setCursor(_x + valueLength - _blinkValuePosition - 1, _y);
     }
-    if (blink == 0) {
+    if (_blink == 0) {
       lcd.print(' ');
     }
   }
@@ -196,6 +191,18 @@ void TextField::setValue(uint16_t value) {
 
 int8_t TextField::shiftLeftValueBlinkPosition() {
   if (_blinkValuePosition != -1) {
-
+    if (_blinkValuePosition < _numValueLength - 1) {
+      _blinkValuePosition++;
+    }
   }
+  return _blinkValuePosition;
+}
+
+int8_t TextField::shiftRightValueBlinkPosition() {
+  if (_blinkValuePosition != -1) {
+    if (_blinkValuePosition > 0) {
+      _blinkValuePosition--;
+    }
+  }
+  return _blinkValuePosition;
 }

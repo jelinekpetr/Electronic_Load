@@ -149,13 +149,19 @@ void showSetupScreen() {
 }
 
 /*********************************************/
-/*    Toggle blink  in statusRTegister       */
+/*    Toggle blink in statusRegister         */
 /*********************************************/
 void blinkB() {
   if (statusRegister[3] == 1) {
     statusRegister[3] = 0;
   } else if (statusRegister[3] == 0) {
     statusRegister[3] = 1;
+  }
+  // Jak vybrat aktivni obrazovku?
+  for (uint8_t i = 0; i <= 9; i++) {
+    if ((mainScreen.textFields[i]._isUsed) && (mainScreen.textFields[i]._inEditMode)) {
+      mainScreen.textFields[i]._blink = statusRegister[3];
+    }
   }
 }
 
@@ -220,6 +226,9 @@ void toggleLoad() {
   cleared = false;
 }
 
+/*********************************************/
+/*             Clearing values               */
+/*********************************************/
 void clearValues() {
   if (!cleared) {       // clearing values
     for (uint8_t i = 0; i < 6; i++) {
@@ -396,10 +405,26 @@ void checkKeyboardBuffer() {
       if ((statusRegister[0] == 0) && (statusRegister[2] == 0)) { // only if Off and no setup
         toggleModeRight();
       }
+      if (statusRegister[2] == 1) {   // Setup
+        // Jak vybrat aktivni obrazovku?
+        for (uint8_t i = 0; i <= 9; i++) {
+          if ((mainScreen.textFields[i]._isUsed) && (mainScreen.textFields[i]._inEditMode)) {
+            setupPos = mainScreen.textFields[i].shiftRightValueBlinkPosition();
+          }
+        }
+      }
       break;
       case '<':
       if ((statusRegister[0] == 0) && (statusRegister[2] == 0)) { // only of Off and no setup
         toggleModeLeft();
+      }
+      if (statusRegister[2] == 1) {   // Setup
+        // Jak vybrat aktivni obrazovku?
+        for (uint8_t i = 0; i <= 9; i++) {
+          if ((mainScreen.textFields[i]._isUsed) && (mainScreen.textFields[i]._inEditMode)) {
+            setupPos = mainScreen.textFields[i].shiftLeftValueBlinkPosition();
+          }
+        }
       }
       default:
       break;
