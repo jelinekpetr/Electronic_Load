@@ -271,13 +271,19 @@ void setNewValues() {
   uint8_t oState = ((statusRegister[2]<<1) | statusRegister[0]);
   switch ( oState ) {
     case 0:  // OFF + Operation
-    mainScreen.textFields[statusRegister[1]].disableEditMode(lcd);
-    //clearValues();
+    if (mainScreen.textFields[statusRegister[1]]._inEditMode) {
+      mainScreen.textFields[statusRegister[1]].disableEditMode(lcd);
+      setupPos = -1;
+    }
+      //clearValues();
     mainScreen.textFields[statusRegister[1]]._valuePrintable = true;
     mainScreen.textFields[statusRegister[1]].setValue(setupValues[statusRegister[1]]);
     break;
     case 1:  // ON + Operation
-    mainScreen.textFields[statusRegister[1]].disableEditMode(lcd);
+    if (mainScreen.textFields[statusRegister[1]]._inEditMode) {
+      mainScreen.textFields[statusRegister[1]].disableEditMode(lcd);
+      setupPos = -1;
+    }
     //clearValues();
     for (uint8_t i = 0; i < 6; i++) {
       mainScreen.textFields[i]._valuePrintable = true;
@@ -286,9 +292,13 @@ void setNewValues() {
     break;
     case 2:  // OFF + Setup
     //clearValues();
+    mainScreen.textFields[statusRegister[1]]._valuePrintable = true;
     mainScreen.textFields[statusRegister[1]].setValue(setupValues[statusRegister[1]]);
-    mainScreen.textFields[statusRegister[1]].setEditMode(lcd);
-    //mainScreen._refreshEnabled = false;
+    if (!mainScreen.textFields[statusRegister[1]]._inEditMode) {
+      mainScreen.textFields[statusRegister[1]].setEditMode(lcd);
+      setupPos = 0;
+      //mainScreen._refreshEnabled = false;
+    }
     break;
     default:
     break;
@@ -341,7 +351,7 @@ void measureValues() {
   /************************************/
   if (statusRegister[0] != 0) {  // Load on
     elapsedTime = millis() - startTime;
-    measuredValues[0] = uint16_t (random(10025,10568));  // current
+    measuredValues[0] = uint16_t (random(925,968));  // current
     measuredValues[1] = 1225;
     measuredValues[2] = uint16_t (measuredValues[0] * measuredValues[1] / 10000);
     measuredValues[3] = measuredValues[1] * 100 / measuredValues[0];
@@ -415,7 +425,7 @@ void checkKeyboardBuffer() {
       }
       break;
       case '<':
-      if ((statusRegister[0] == 0) && (statusRegister[2] == 0)) { // only of Off and no setup
+      if ((statusRegister[0] == 0) && (statusRegister[2] == 0)) { // only if Off and no setup
         toggleModeLeft();
       }
       if (statusRegister[2] == 1) {   // Setup
@@ -431,8 +441,6 @@ void checkKeyboardBuffer() {
     }
   }
 }
-
-
 
 void checkDeviceStatus() {
 

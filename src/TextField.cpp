@@ -91,7 +91,11 @@ void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength,
 
   lcd.setCursor(_x+_prefix.length(), _y);
   for (uint8_t i = 0; i < valueLength; i++) {
-    lcd.print(" ");
+    if (_blinkValuePosition != -1) {
+      lcd.print('0');
+    } else {
+      lcd.print(' ');
+    }
   }
   if (card > 9) {xoff--;}
   if (card > 99) {xoff--;}
@@ -115,9 +119,9 @@ void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength,
     lcd.print(frac);
   }
   if (_blinkValuePosition != -1) {
-    lcd.setCursor(_x + valueLength - _blinkValuePosition, _y);
+    lcd.setCursor(_x + valueLength - _blinkValuePosition + 1, _y);
     if (_blinkValuePosition >= fracLength) {
-      lcd.setCursor(_x + valueLength - _blinkValuePosition - 1, _y);
+      lcd.setCursor(_x + valueLength - _blinkValuePosition, _y);
     }
     if (_blink == 0) {
       lcd.print(' ');
