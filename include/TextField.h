@@ -5,6 +5,7 @@
 #define POWER_VALUE 3
 #define RESIST_VALUE 4
 #define TIME_VALUE 5
+#define CVOLT_VALUE 6
 
 #include <LiquidCrystal_I2C.h>
 
@@ -30,8 +31,8 @@ public:
   TextField(String, bool, uint8_t, uint8_t, uint8_t, String, String, uint8_t);
   //void setBlinkCursor(uint8_t position);
   //void disableBlinkCursor(uint8_t position);
-  void setEditMode(LiquidCrystal_I2C& lcd);
-  void disableEditMode(LiquidCrystal_I2C& lcd);
+  int8_t setEditMode(LiquidCrystal_I2C& lcd);
+  int8_t disableEditMode(LiquidCrystal_I2C& lcd);
   void draw(LiquidCrystal_I2C& lcd);
   void drawValue(LiquidCrystal_I2C& lcd, int8_t pos = -1);
   void clearValue(LiquidCrystal_I2C& lcd);
@@ -41,7 +42,7 @@ public:
   int8_t shiftRightValueBlinkPosition();
 
 private:
-  void printFrac(uint16_t value, uint16_t divider, uint8_t valueLength, uint8_t fracLength, LiquidCrystal_I2C& lcd);
+  void printFrac(uint16_t divider, uint8_t fracLength, LiquidCrystal_I2C& lcd);
   void setPrefix(String prefix);
   void setSuffix(String suffix);
   void drawPrefix(LiquidCrystal_I2C& lcd);

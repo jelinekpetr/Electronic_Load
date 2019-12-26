@@ -21,6 +21,8 @@ TextField::TextField(String name, bool isUsed, uint8_t x, uint8_t y, uint8_t len
     case 4:
     _numValueLength = 5;
     break;
+    case 6:
+    _numValueLength = 3;
     default:
     break;
   }
@@ -58,7 +60,7 @@ void TextField::draw(LiquidCrystal_I2C& lcd) {
   }
 }
 
-void TextField::setEditMode(LiquidCrystal_I2C& lcd) {
+int8_t TextField::setEditMode(LiquidCrystal_I2C& lcd) {
   uint8_t ind = 0;
   if (_suffix.endsWith(";") == 0) {
     ind = _length - 1;
@@ -69,12 +71,14 @@ void TextField::setEditMode(LiquidCrystal_I2C& lcd) {
   lcd.write(1);       // Arrows
   _inEditMode = 1;
   _blinkValuePosition = 0;
+  return _blinkValuePosition;
 }
 
-void TextField::disableEditMode(LiquidCrystal_I2C& lcd) {
+int8_t TextField::disableEditMode(LiquidCrystal_I2C& lcd) {
   _inEditMode = 0;
   _blinkValuePosition = -1;
   drawSuffix(lcd);
+  return _blinkValuePosition;
 }
 
 void TextField::clearValue(LiquidCrystal_I2C &lcd) {
@@ -84,9 +88,10 @@ void TextField::clearValue(LiquidCrystal_I2C &lcd) {
   }
 }
 
-void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength, uint8_t fracLength, LiquidCrystal_I2C& lcd) {
-  uint16_t card = value/divider;
-  uint16_t frac = value%divider;
+void TextField::printFrac(uint16_t divider, uint8_t fracLength, LiquidCrystal_I2C& lcd) {
+  uint8_t valueLength = _length - _prefix.length() - _suffix.length();
+  uint16_t card = _nvalue/divider;
+  uint16_t frac = _nvalue%divider;
   uint8_t xoff = _prefix.length() + (valueLength - fracLength - 2);
 
   lcd.setCursor(_x+_prefix.length(), _y);
@@ -118,10 +123,10 @@ void TextField::printFrac(uint16_t value, uint16_t divider, uint8_t valueLength,
     }
     lcd.print(frac);
   }
-  if (_blinkValuePosition != -1) {
-    lcd.setCursor(_x + valueLength - _blinkValuePosition + 1, _y);
+  if (_blinkValuePosition != -1) {     // Blinking
+    lcd.setCursor(_x + _prefix.length() + valueLength - _blinkValuePosition - 1, _y);
     if (_blinkValuePosition >= fracLength) {
-      lcd.setCursor(_x + valueLength - _blinkValuePosition, _y);
+      lcd.setCursor(_x + _prefix.length() + valueLength - _blinkValuePosition - 2, _y);
     }
     if (_blink == 0) {
       lcd.print(' ');
@@ -133,16 +138,19 @@ void TextField::drawNumberValue(LiquidCrystal_I2C& lcd) {
   uint8_t valueLength = _length - _prefix.length() - _suffix.length();
   switch (_valueType) {
     case CURR_VALUE:
-    printFrac(_nvalue, 1000, valueLength, 3, lcd);
+    printFrac(1000, 3, lcd);
     break;
     case VOLT_VALUE:
-    printFrac(_nvalue, 100, valueLength, 2, lcd);
+    printFrac(100, 2, lcd);
     break;
     case POWER_VALUE:
-    printFrac(_nvalue, 10, valueLength, 1, lcd);
+    printFrac(10, 1, lcd);
     break;
     case RESIST_VALUE:
-    printFrac(_nvalue, 10, valueLength, 1, lcd);
+    printFrac(10, 1, lcd);
+    break;
+    case CVOLT_VALUE:
+    printFrac(100, 2, lcd);
     break;
     case TIME_VALUE:
     uint8_t hours = _nvalue/3600;
