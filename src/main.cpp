@@ -470,6 +470,7 @@ void toggleModeRight()
 /*********************************************/
 /*        calculate inc/dec                  */
 /*********************************************/
+/*
 uint16_t incDecValue()
 {
   uint16_t val = 1;
@@ -479,6 +480,7 @@ uint16_t incDecValue()
   }
   return val;
 }
+*/
 
 /*********************************************/
 /*           Read from EEPROM                */
@@ -488,7 +490,7 @@ void readFromEEPROM(int8_t baseAddress) // base address: 0, 1, 2...
   // EEPROM read preset values from base address
   for (uint16_t i = 0; i < 7; i++)
   {
-    setupValues[i] = (uint16_t (EEPROM.read(2 * (i + baseAddress * 7) + 1)) << 8) | EEPROM.read(2 * (i + baseAddress * 7));
+    setupValues[i] = (uint16_t(EEPROM.read(2 * (i + baseAddress * 7) + 1)) << 8) | EEPROM.read(2 * (i + baseAddress * 7));
   }
 }
 
@@ -506,11 +508,69 @@ void writeToEEPROM(uint8_t baseAddress)
   EEPROM.write(2 * (4 + baseAddress * 7), 1);
 }
 
+/*********************************************/
+/*           erase EEPROM                    */
+/*********************************************/
 void eraseEEPROM()
 {
   for (uint8_t i = 0; i < 24; i++)
   {
     EEPROM.write(i, 255);
+  }
+}
+
+/*********************************************/
+/*     change setup values (^,v,1..9)        */
+/*********************************************/
+void changeSetupValue(uint8_t indexInSetupRegister, char oper, uint8_t val_ = 1, int8_t pos = -1)
+{
+  if ((pos != setupPos) && (setupPos != -1)) // only if pos is different from setupPos and setupPos is set (something is in edit mode)
+  {
+    uint8_t ppos = setupPos;
+    uint16_t val = 1;
+    uint16_t maxValues[] = {50000, 9999, 9999, 65000, 0, 0, 999};
+    for (uint8_t i = 1; i <= ppos; i++)
+    {
+      val *= 10;
+    }
+    switch (oper)
+    {
+    case '+':
+      if (setupValues[indexInSetupRegister] + val <= maxValues[indexInSetupRegister])
+      {
+        setupValues[indexInSetupRegister] += val;
+      } // else beep
+      break;
+    case '-':
+      if (setupValues[indexInSetupRegister] - val >= 0)
+      {
+        setupValues[indexInSetupRegister] -= val;
+      } // else beep
+      break;
+    default:
+      uint16_t n1 = setupValues[indexInSetupRegister] % val;
+      uint32_t n2 = ((setupValues[indexInSetupRegister] / val) / 10) * 10 * val + n1 + val_ * val;
+      if ((n2 <= maxValues[indexInSetupRegister]) && (n2 >= 0))
+      {
+        setupValues[indexInSetupRegister] = uint16_t (n2);
+      } // else beep
+      break;
+    }
+  }
+}
+
+void updateNumInSetupValue(uint8_t x)
+{
+  if ((statusRegister[2] == 1) || (statusRegister[2] == 2))
+  {
+    if (mainScreen.textFields[6]._inEditMode)
+    {
+      changeSetupValue(6, 'x', x);
+    }
+    else
+    {
+      changeSetupValue(statusRegister[1], 'x', x);
+    }
   }
 }
 
@@ -592,11 +652,11 @@ void checkKeyboardBuffer()
       {
         if (mainScreen.textFields[6]._inEditMode)
         {
-          setupValues[6] += incDecValue();
+          changeSetupValue(6, '+');
         }
         else
         {
-          setupValues[statusRegister[1]] += incDecValue();
+          changeSetupValue(statusRegister[1], '+');
         }
       }
       break;
@@ -605,14 +665,11 @@ void checkKeyboardBuffer()
       {
         if (mainScreen.textFields[6]._inEditMode)
         {
-          setupValues[6] -= incDecValue();
+          changeSetupValue(6, '-');
         }
         else
         {
-          if (setupValues[statusRegister[1]] > 0)
-          {
-            setupValues[statusRegister[1]] -= incDecValue();
-          }
+          changeSetupValue(statusRegister[1], '-');
         }
       }
       break;
@@ -622,8 +679,38 @@ void checkKeyboardBuffer()
         writeToEEPROM(0);
       }
       break;
-    case '1':
+    case 'H':
       eraseEEPROM();
+      break;
+    case '0':
+      updateNumInSetupValue(0);
+      break;
+    case '1':
+      updateNumInSetupValue(1);
+      break;
+    case '2':
+      updateNumInSetupValue(2);
+      break;
+    case '3':
+      updateNumInSetupValue(3);
+      break;
+    case '4':
+      updateNumInSetupValue(4);
+      break;
+    case '5':
+      updateNumInSetupValue(5);
+      break;
+    case '6':
+      updateNumInSetupValue(6);
+      break;
+    case '7':
+      updateNumInSetupValue(7);
+      break;
+    case '8':
+      updateNumInSetupValue(8);
+      break;
+    case '9':
+      updateNumInSetupValue(9);
       break;
     default:
       break;
